@@ -22,34 +22,28 @@ class CSPTestMaster(flow.FlowMaster):
         self.callback = callback
 
     def run(self):
-        flow.FlowMaster.run(self)
+        try:
+            flow.FlowMaster.run(self)
+        except KeyboardInterrupt:
+            self.shutdown()
 
     def handle_request(self, r):
         f = flow.FlowMaster.handle_request(self, r)
         if f:
-            r._ack()
+            r.reply()
             if r.path == self.reporturi:
                 report=json.loads(r.content)['csp-report']
                 print report['violated-directive'] + " : " + report['blocked-uri']
                 if(self.callback):
-                    self.callback(r.content)
+                    self.callback(r.content.strip())
         return f
 
     def handle_response(self, r):
         f = flow.FlowMaster.handle_response(self, r)
-        if(self.hostre.search(r.request.host)):
-            if r.headers["content-security-policy-report-only"]:
-                r.headers["content-security-policy-report-only"] = [""]
-            if r.headers["content-security-policy"]:
-                r.headers["content-security-policy"] = [""]
-            #if "content-security-policy" in r.headers:
-            #    r.headers.pop("content-security-policy", None)
-        	r.headers["content-security-policy-report-only"] = [
-                self.policy +
-                "report-uri " + self.reporturi
-            ]
         if f:
-            r._ack()
+            if(self.hostre.search(r.request.host)):
+        	    f.response.headers.add("Content-Security-Policy-Report-Only", self.policy + "report-uri " +self.reporturi); 
+            r.reply()
         return f
 
 class CSPProxy:
