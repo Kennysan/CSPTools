@@ -6,7 +6,7 @@ from urlparse import urlparse
 
 #NOTE: Currently, the code skips any inline javascript
 
-CSPV = ['none', 'script', 'object', 'img', 'media', 'style', 'frame', 'font', 'xhr', 'default']
+CSPV = ['none', 'script', 'object', 'img', 'media', 'style', 'frame', 'font', 'connect', 'default']
 
 class base:
     def __init__(self, scheme='', port=0, hostname=[], violation=''):
@@ -30,7 +30,13 @@ class base:
             if(p == '*'):
                 break
         violation = self.violation if self.violation == obj.violation else ''
-        return testurl(scheme, port, hostname, violation) if scheme and port and hostname else testurl('', 0, [], 'none')
+        return testurl(scheme, port, hostname, violation) if scheme and hostname else testurl('', 0, [], 'none')
+
+    def __repr__(self):
+        return "<%s %s %s %s %s>" % ( self.__class__.__name__, self.scheme, self.port, self.hostname, self.violation)
+
+    def __str__(self):
+        return "%s %s %s %s" % (self.scheme, self.port, self.hostname, self.violation)
 
 class testurl(base):
     default_port = {'http':80,'https':443,'null':-1}
@@ -56,6 +62,7 @@ class CSPParser:
     def __init__(self, host):
         self.hostre = re.compile('^(?:\w+://)?(.+)$')
         self.host = host
+        self.results = dict([(x, []) for x in CSPV])
 
     def load(self, urls):
         self.urls = {}
@@ -65,10 +72,25 @@ class CSPParser:
             try:
                 jsonreport = json.loads(line)['csp-report']
                 str = jsonreport['blocked-uri']
-                violation = violation_re.match(jsonreport['violated-directive']).group()
+
+                if 'effective-directive' in jsonreport:
+
+                    violation = violation_re.match(jsonreport['effective-directive']).group()
+                else:
+                    violation = violation_re.match(jsonreport['violated-directive']).group()
+                #special handling for self.
+                if not str:
+                    self.results[violation]=["'self'"]
+
                 if(javascript_re.match(str)): continue
 
-                self.urls[str.partition('?')[0]] = violation if violation in CSPV else 'none'
+                if violation in CSPV:
+                    if str.partition('?')[0] not in self.urls:
+                        self.urls[str.partition('?')[0]] = [violation]
+                    elif violation not in self.urls[str.partition('?')[0]]:
+                        self.urls[str.partition('?')[0]].append(violation)
+                else:
+                    none
             except: pass #print "Error loading: " + x
 
     def __str__(self):
@@ -91,13 +113,13 @@ class CSPParser:
                 urlobjs.append(testurl(scheme, port, hostname, self.urls[x]))
             urlobjs = list(set(urlobjs))
         for x in urlobjs:
-            subbuckets = buckets[x.violation]
-            domain = x.origin()
-            if(domain not in subbuckets):
-                subbuckets[domain] = bucket(x.scheme, x.port, x.hostname, x.violation)
-            subbuckets[domain].urls.append(x)
+            for violation_type in x.violation:
+                subbuckets = buckets[violation_type]
+                domain = x.origin()
+                if(domain not in subbuckets):
+                    subbuckets[domain] = bucket(x.scheme, x.port, x.hostname, violation_type)
+                subbuckets[domain].urls.append(x)
 
-        self.results = dict([(x, []) for x in CSPV])
 
         for type in buckets:
             for domain in buckets[type]:
