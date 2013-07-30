@@ -21,7 +21,7 @@ class CSPBrowser:
             profile.set_preference("network.proxy.http", domain)
             profile.set_preference("network.proxy.http_port", port)
             profile.update_preferences()
-        self.driver = webdriver.Firefox(firefox_profile=profile)	    
+        self.driver = webdriver.Firefox(firefox_profile=profile)
 
     def load(self, urllist):
         self.urllist = []
@@ -37,6 +37,7 @@ class CSPBrowser:
             #print "Visiting: " + url
             self.driver.get(url)
             self.driver.get('about:blank')
+        self.shutdown()
 
     def shutdown(self):
         self.driver.close()
