@@ -35,7 +35,7 @@ class CSPTestMaster(flow.FlowMaster):
                 print report['violated-directive'] + " : " + report['blocked-uri']
                 if(self.callback):
                     self.callback(r.content.strip())
-            r.reply()
+        r.reply()
         return f
 
     def handle_response(self, r):
