@@ -8,9 +8,8 @@ import selenium.webdriver.support.ui as ui
 import re
 import atexit
 
-disp = Display(visible=0, size=(800,600))
-atexit.register(lambda: disp.stop())
-disp.start()
+import os
+os.environ['DISPLAY'] = ':1'
 
 class CSPBrowser:
     schema = re.compile('^https?://', re.IGNORECASE)

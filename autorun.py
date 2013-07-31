@@ -5,13 +5,11 @@ import time
 import threading
 import argparse
 import atexit
-sys.path.append("CSP-Browser")
-sys.path.append("CSP-Proxy")
-sys.path.append("CSP-Parser")
+import re
 
-from CSPBrowser import *
-from CSPProxy import *
-from CSPParser import *
+from browser import CSPBrowser
+from proxy import CSPProxy
+from parser import CSPParser
 
 parser = argparse.ArgumentParser(description="Auto runner for the CSP tools")
 parser.add_argument('list', metavar='listfile', help='list of urls to visit', type=argparse.FileType('r'))
@@ -39,14 +37,14 @@ csp = [
 
 #Start proxy
 print 'Starting proxy'
-x = CSPProxy(csp, port, re.compile(args.hostre), '/csp.php', lambda r: log.append(r))
+x = CSPProxy.CSPProxy(csp, port, re.compile(args.hostre), '/csp.php', lambda r: log.append(r))
 t = threading.Thread(target=lambda: x.run())
 atexit.register(lambda: x.shutdown)
 t.start()
 
 #Go through the list
 print 'Visiting urls'
-b = CSPBrowser(port, host)
+b = CSPBrowser.CSPBrowser(port, host)
 b.load(list)
 b.run()
 b.shutdown()
@@ -58,7 +56,7 @@ t.join()
 
 #Parse the reports
 print 'Parsing logs'
-p = CSPParser(args.hostre)
+p = CSPParser.CSPParser(args.hostre)
 p.load(log)
 p.generate(False)
 print p
