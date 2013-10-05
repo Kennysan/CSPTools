@@ -32,7 +32,7 @@ csp = [
     "style-src 'none';" +
     "frame-src 'none';" +
     "font-src 'none';" +
-    "xhr-src 'none';"
+    "connect-src 'none';"
 ][0]
 
 #Start proxy
