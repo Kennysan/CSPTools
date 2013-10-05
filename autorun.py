@@ -13,7 +13,7 @@ from parser import CSPParser
 
 parser = argparse.ArgumentParser(description="Auto runner for the CSP tools")
 parser.add_argument('list', metavar='listfile', help='list of urls to visit', type=argparse.FileType('r'))
-parser.add_argument('-o', '--host', metavar='host', default='example.com', help='Host regexp to inject csp headers into', dest='hostre')
+parser.add_argument('-o', '--host', metavar='host', default='www\.example\.com', help='Host regexp to inject csp headers into', dest='hostre')
 args = parser.parse_args()
 
 #Load list
@@ -37,7 +37,7 @@ csp = [
 
 #Start proxy
 print 'Starting proxy'
-x = CSPProxy.CSPProxy(csp, port, re.compile(args.hostre), '/csp.php', lambda r: log.append(r))
+x = CSPProxy.CSPProxy(csp, port, re.compile(args.hostre), '/csp.php', False,lambda r: log.append(r))
 t = threading.Thread(target=lambda: x.run())
 atexit.register(lambda: x.shutdown)
 t.start()

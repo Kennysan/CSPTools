@@ -14,12 +14,13 @@ import re
 
 #Create proxy
 class CSPTestMaster(flow.FlowMaster):
-    def __init__(self, server, state, policy, hostre, reporturi, callback=None):
+    def __init__(self, server, state, policy, hostre, reporturi, block, callback=None):
         flow.FlowMaster.__init__(self, server, state)
         self.policy = policy
         self.hostre = hostre
         self.reporturi = reporturi
         self.callback = callback
+        self.block = block
 
     def run(self):
         try:
@@ -42,16 +43,19 @@ class CSPTestMaster(flow.FlowMaster):
         f = flow.FlowMaster.handle_response(self, r)
         if f:
             if(self.hostre.search(r.request.host)):
-        	    f.response.headers.add("Content-Security-Policy-Report-Only", self.policy + "report-uri " +self.reporturi); 
+                if self.block:
+        	        f.response.headers.add("Content-Security-Policy-Report", self.policy + "report-uri " +self.reporturi); 
+                else:
+        	        f.response.headers.add("Content-Security-Policy-Report-Only", self.policy + "report-uri " +self.reporturi); 
         r.reply()
         return f
 
 class CSPProxy:
-    def __init__(self, policy, port, hostre, reporturi, callback):
+    def __init__(self, policy, port, hostre, reporturi, block, callback):
         config = proxy.ProxyConfig(cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem"))
         state = flow.State()
         server = proxy.ProxyServer(config, port)
-        self.proxy = CSPTestMaster(server, state, policy, hostre, reporturi, callback)
+        self.proxy = CSPTestMaster(server, state, policy, hostre, reporturi, block, callback)
 
     def run(self):
         self.proxy.run()
