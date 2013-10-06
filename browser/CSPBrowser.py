@@ -19,6 +19,9 @@ class CSPBrowser:
             profile.set_preference("network.proxy.type",1)
             profile.set_preference("network.proxy.http", domain)
             profile.set_preference("network.proxy.http_port", port)
+            profile.set_preference("network.proxy.ssl", domain)
+            profile.set_preference("network.proxy.ssl_port", port)
+            profile.set_preference("network.proxy.no_proxies_on", "localhost,127.0.0.1")
             profile.update_preferences()
         self.driver = webdriver.Firefox(firefox_profile=profile)
 
