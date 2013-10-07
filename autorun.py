@@ -12,12 +12,12 @@ from proxy import CSPProxy
 from parser import CSPParser
 
 parser = argparse.ArgumentParser(description="Auto runner for the CSP tools")
-parser.add_argument('list', metavar='listfile', help='list of urls to visit', type=argparse.FileType('r'))
+parser.add_argument('urls', metavar='listfile', help='list of urls to visit', type=argparse.FileType('r'))
 parser.add_argument('-o', '--host', metavar='host', default='www\.example\.com', help='Host regexp to inject csp headers into', dest='hostre')
 args = parser.parse_args()
 
 #Load list
-list = args.list.readlines()
+urls = args.list.readlines()
 args.list.close()
 
 port=8080
@@ -45,7 +45,7 @@ t.start()
 #Go through the list
 print 'Visiting urls'
 b = CSPBrowser.CSPBrowser(port, host)
-b.load(list)
+b.load(urls)
 b.run()
 b.shutdown()
 
@@ -59,4 +59,6 @@ print 'Parsing logs'
 p = CSPParser.CSPParser(args.hostre)
 p.load(log)
 p.generate(False)
+
+#Print the generated CSP
 print p

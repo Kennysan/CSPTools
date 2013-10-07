@@ -9,6 +9,14 @@ CSP-Proxy - mitm proxy to transmit CSP Headers and catch browser-generated CSP r
 
 CSP-Parser - Parse out proxy logs into a cohesive CSP policy
 
+Running
+-------
+
+1. Generate a list of urls for the proxy to visit
+2. Execute with `./autorun.py <list> -o <hostname>`
+
+Run with `--help` for additional options
+
 Requirements
 ------------
 
