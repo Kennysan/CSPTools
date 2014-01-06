@@ -17,8 +17,8 @@ parser.add_argument('-o', '--host', metavar='host', default='www\.example\.com',
 args = parser.parse_args()
 
 #Load list
-urls = args.list.readlines()
-args.list.close()
+urls = args.urls.readlines()
+args.urls.close()
 
 port=8080
 host='localhost'
