@@ -20,6 +20,15 @@ Run with `--help` for additional options
 Requirements
 ------------
 
+You will need the following packages (install w/ apt, homebrew, or your
+friendly neighborhood package manager):
+
+* libffi-dev
+* libxml2-dev
+* libxslt-dev
+
+And these Python package dependencies:
+
 - mitmproxy
 - selenium
 - pyvirtualdisplay
