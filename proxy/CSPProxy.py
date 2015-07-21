@@ -5,6 +5,7 @@ import sys
 import threading
 import os
 import json
+from libmproxy.proxy.server import ProxyServer
 from libmproxy import proxy, flow
 import re
 
@@ -31,11 +32,11 @@ class CSPTestMaster(flow.FlowMaster):
     def handle_request(self, r):
         f = flow.FlowMaster.handle_request(self, r)
         if f:
-            if r.path == self.reporturi:
-                report=json.loads(r.content)['csp-report']
+            if r.request.path == self.reporturi:
+                report=json.loads(r.request.content)['csp-report']
                 print report['violated-directive'] + " : " + report['blocked-uri']
                 if(self.callback):
-                    self.callback(r.content.strip())
+                    self.callback(r.request.content.strip())
         r.reply()
         return f
 
@@ -52,9 +53,9 @@ class CSPTestMaster(flow.FlowMaster):
 
 class CSPProxy:
     def __init__(self, policy, port, hostre, reporturi, block, callback):
-        config = proxy.ProxyConfig(cacert = os.path.expanduser("~/.mitmproxy/mitmproxy-ca.pem"))
+        config = proxy.ProxyConfig(port = port)
         state = flow.State()
-        server = proxy.ProxyServer(config, port)
+        server = ProxyServer(config)
         self.proxy = CSPTestMaster(server, state, policy, hostre, reporturi, block, callback)
 
     def run(self):

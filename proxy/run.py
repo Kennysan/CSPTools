@@ -3,6 +3,7 @@
 import argparse
 import re
 from CSPProxy import *
+import traceback
 
 defaultcsp = [
     "default-src 'none';" +
@@ -42,6 +43,8 @@ log = open(args.logfile, 'a');
 p = CSPProxy(args.csp, args.port, re.compile(args.hostre), args.reporturi, args.block, lambda r: log.write(r+"\n"))
 try:
     p.run()
-except:
+except Exception as e:
+    print e
+    traceback.print_exc()
     p.shutdown()
 log.close()
